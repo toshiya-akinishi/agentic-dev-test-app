@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "J-Tour",
+    "slug": "jtour-app",
+    "scheme": "jtour",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": ["expo-router", "expo-secure-store", "expo-video"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "jp.jtour.fanapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "会場マップ上にあなたの現在地を表示するために使用します（要求 1-30）"
+      }
+    },
+    "android": {
+      "package": "jp.jtour.fanapp",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+      "adaptiveIcon": {
+        "backgroundColor": "#0B5D2E",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      }
+    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
+    "experiments": { "typedRoutes": false }
+  }
+}
