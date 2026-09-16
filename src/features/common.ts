@@ -73,3 +73,37 @@ export const internalRouteFor = (target: {
       return undefined
   }
 }
+
+/**
+ * 通知センター（6-17 / 補-6-17-2）の `deepLink` をアプリ内ルートへ解決する。
+ * CMS 側は `jtour://<kind>/<id>?player=<id>` 形式の独自スキームで発行する
+ * （`notificationsRunChecks.ts` / `notificationsEmergency.ts` / `seed/ops.ts` 参照）。
+ * `internalRouteFor` は本文中リンク（relationTo ベース）用のため別関数として用意する。
+ */
+export type ParsedNotificationLink = { path: string; tournamentId?: number; playerId?: number }
+
+export const parseNotificationDeepLink = (
+  deepLink: string | null | undefined,
+): ParsedNotificationLink | undefined => {
+  if (!deepLink) return undefined
+  const m = /^jtour:\/\/([a-z0-9_-]+)\/(\d+)(?:\?player=(\d+))?$/i.exec(deepLink)
+  if (!m) return undefined
+  const [, kind, id, playerId] = m
+  const tournamentId = Number(id)
+  const parsedPlayerId = playerId ? Number(playerId) : undefined
+
+  switch (kind) {
+    case 'leaderboard':
+      return { path: `/tournament/${id}/leaderboard`, tournamentId, playerId: parsedPlayerId }
+    case 'tournament':
+      return { path: `/tournament/${id}`, tournamentId }
+    case 'player':
+      return { path: `/player/${id}`, playerId: Number(id) }
+    case 'video':
+      return { path: `/video/${id}` }
+    case 'news':
+      return { path: `/news/${id}` }
+    default:
+      return undefined
+  }
+}
