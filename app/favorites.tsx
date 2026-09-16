@@ -4,20 +4,24 @@
  * このリポジトリではまだどの Epic も作成していなかった画面のため、EP-12 の担当分
  * （T-12-5: 動画タブ / T-12-9: プレイリストタブ）をここで実装した。
  * 「ショット」タブ（1-45 / T-11-9）は EP-11 でここに実装する（EP-12 が残したスタブを置き換え）。
- * 「選手」（4-12, 4-13 / T-13-6）タブは別 Epic の担当のためスタブのまま残す。
+ * 「選手」（4-12, 4-13 / T-13-6）タブは EP-13 でここに実装する（並べ替え・出場中はリアルタイムスコア）。
  */
 import { router, Stack } from 'expo-router'
-import React, { useState } from 'react'
+import { useStore } from 'jotai'
+import React, { useMemo, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, View } from 'react-native'
 
 import { Button, EmptyState, ErrorView, SkeletonList, Tabs, TextField, Txt } from '../src/components/ui'
 import { relDoc, relId } from '../src/features/common'
+import { FavoritePlayerRow } from '../src/features/players'
 import { CLUB_LABELS } from '../src/lib/shotText'
-import { useFavoritePlayers } from '../src/queries/home'
+import { useFavoritePlayers, useReorderFavoritePlayer, useToggleFavoritePlayer } from '../src/queries/home'
 import { useLikedShots, useLikedVideos, useToggleShotLike } from '../src/queries/likes'
+import { useFavoritePlayersStatus } from '../src/queries/players'
 import { MAX_PLAYLISTS_PER_OWNER, useCreatePlaylist, useMyPlaylists } from '../src/queries/playlists'
 import { PlaylistCard } from '../src/features/playlist'
 import { VideoCard } from '../src/features/videos'
+import { leaderboardFilterAtom, leaderboardSearchAtom } from '../src/store/ui'
 import { colors, space } from '../src/theme'
 import type { Player, Round, Shot, Video } from '../src/types/payload'
 
@@ -129,9 +133,20 @@ const PlaylistsTab = () => {
   )
 }
 
-/** 4-12, 4-13（T-13-6 の担当）。ここでは既存のお気に入り選手データを一覧表示するだけの簡易版 */
+/**
+ * T-13-6 / 補-4-12-3, 補-4-13-1, 2: お気に入り選手一覧。
+ * 並べ替え（上下ボタンで `favorites.order` を入れ替え）・出場中選手のリアルタイムスコア（15秒ポーリング）。
+ */
 const PlayerFavoritesTab = () => {
-  const { players, isLoading, error, refetch } = useFavoritePlayers()
+  const { players, playerIds, favorites, favoriteIdByPlayerId, isLoading, error, refetch } = useFavoritePlayers()
+  const { byPlayerId: statusByPlayerId } = useFavoritePlayersStatus(playerIds, true)
+  const reorder = useReorderFavoritePlayer()
+  const toggleFavorite = useToggleFavoritePlayer()
+  const jotaiStore = useStore()
+
+  // favorites は order 昇順で取得済み（useFavoritePlayers 側の sort: 'order'）。
+  // players は favorites と同じ並びで作られているため、そのままインデックスで前後の入れ替えができる。
+  const orders = useMemo(() => favorites.map((f) => f.order ?? 0), [favorites])
 
   if (isLoading) return <SkeletonList rows={4} />
   if (error) return <ErrorView error={error} onRetry={() => void refetch()} />
@@ -147,20 +162,55 @@ const PlayerFavoritesTab = () => {
     )
   }
 
+  const swap = (i: number, j: number) => {
+    const favA = favorites[i]
+    const favB = favorites[j]
+    if (!favA || !favB) return
+    const orderA = orders[i]
+    const orderB = orders[j]
+    reorder.mutate({ favoriteId: favA.id, order: orderB })
+    reorder.mutate({ favoriteId: favB.id, order: orderA })
+  }
+
+  const openPlayer = (player: Player) => {
+    const status = statusByPlayerId.get(player.id)
+    const isLive = status ? status.round.status === 'live' || status.round.status === 'suspended' : false
+    if (isLive && status) {
+      // 補-4-13-2: 当該選手の位置までスクロールした状態に近い体験として、
+      // リーダーボードの検索絞り込みを選手名で先にセットしてから遷移する。
+      const tournamentKey = String(status.tournament.id)
+      jotaiStore.set(leaderboardFilterAtom(tournamentKey), 'all')
+      jotaiStore.set(leaderboardSearchAtom(tournamentKey), player.name)
+      router.push(`/tournament/${status.tournament.id}/leaderboard`)
+      return
+    }
+    router.push(`/player/${player.id}`)
+  }
+
   return (
     <FlatList
       data={players}
       keyExtractor={(p) => String(p.id)}
       contentContainerStyle={{ paddingVertical: space.sm }}
-      renderItem={({ item }) => (
-        <View style={styles.playerRow}>
-          <Txt style={{ flex: 1 }}>{item.name}</Txt>
-          <Pressable onPress={() => router.push(`/player/${item.id}`)} hitSlop={8}>
-            <Txt size="sm" color={colors.primary}>
-              詳細 ›
-            </Txt>
-          </Pressable>
-        </View>
+      renderItem={({ item, index }) => (
+        <FavoritePlayerRow
+          order={index + 1}
+          player={item}
+          status={statusByPlayerId.get(item.id)}
+          canMoveUp={index > 0}
+          canMoveDown={index < players.length - 1}
+          onMoveUp={() => swap(index, index - 1)}
+          onMoveDown={() => swap(index, index + 1)}
+          onPress={() => openPlayer(item)}
+          onRemove={() =>
+            toggleFavorite.mutate({
+              playerId: item.id,
+              favoriteId: favoriteIdByPlayerId.get(item.id),
+              currentCount: playerIds.length,
+              nextOrder: playerIds.length,
+            })
+          }
+        />
       )}
     />
   )
