@@ -4,15 +4,24 @@
  */
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import React from 'react'
-import { Linking, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { Button, Card, ErrorView, Loading, StatusBadge, Txt } from '../../../src/components/ui'
 import { useLoginGate } from '../../../src/features/auth'
 import { relDoc } from '../../../src/features/common'
 import { TournamentTabs } from '../../../src/features/tournaments'
+import {
+  AccessInfoSection,
+  GalleryBusSection,
+  GoogleMapQrCard,
+  ParkingSection,
+  StoreCarousel,
+  WeatherStrip,
+} from '../../../src/features/venue'
 import { formatDateRange, formatMoney } from '../../../src/lib/format'
 import { useTicketTypes } from '../../../src/queries/tickets'
 import { useTournament } from '../../../src/queries/tournaments'
+import { useTransportInfos, useVenueFacilities, useWeatherForecasts } from '../../../src/queries/venue'
 import { colors, space } from '../../../src/theme'
 import type { Venue } from '../../../src/types/payload'
 
@@ -25,6 +34,12 @@ export default function TournamentOverviewScreen() {
   const venue = tournament ? relDoc<Venue>(tournament.venue) : undefined
   const hasPamphlet = Boolean(tournament?.pamphletPdf || tournament?.pamphletWebUrl)
   const hasTickets = (ticketTypesData?.docs?.length ?? 0) > 0
+
+  /** T-08-1〜T-08-4, T-08-11, T-08-12: 現地情報系ブロック（補-1-8-1: 概要タブに縦配置） */
+  const { galleryBus, parking, shuttle } = useTransportInfos(tournament?.id)
+  const { forecasts } = useWeatherForecasts(tournament?.id)
+  const { data: facilitiesData } = useVenueFacilities(venue?.id, tournament?.id)
+  const goodsFacilities = (facilitiesData?.docs ?? []).filter((f) => f.type === 'goods')
 
   return (
     <View style={styles.screen}>
@@ -52,6 +67,17 @@ export default function TournamentOverviewScreen() {
             <Row label="賞金総額" value={formatMoney(tournament.prizeMoneyTotal)} />
           </Card>
 
+          {/* T-08-2 / 1-14 */}
+          <GoogleMapQrCard googleMapUrl={venue?.googleMapUrl} venueName={venue?.name} />
+          {/* T-08-1 / 1-17 */}
+          <AccessInfoSection venue={venue} shuttleInfos={shuttle} />
+          {/* T-08-3 / 1-15 */}
+          <GalleryBusSection buses={galleryBus} />
+          {/* T-08-4 / 1-16 */}
+          <ParkingSection lots={parking} />
+          {/* T-08-11 / 1-24 */}
+          <WeatherStrip forecasts={forecasts} />
+
           <Card style={{ gap: space.md }}>
             <Txt weight="bold">パンフレット・組み合わせ</Txt>
             <Button
@@ -68,19 +94,8 @@ export default function TournamentOverviewScreen() {
             ) : null}
           </Card>
 
-          {tournament.officialStoreUrl ? (
-            <Card style={{ gap: space.md }}>
-              <Txt weight="bold">公式ストア</Txt>
-              <Txt size="sm" color={colors.textSub}>
-                大会オフィシャルグッズは外部ストアでご購入いただけます。
-              </Txt>
-              <Button
-                title="公式ストアを見る"
-                variant="secondary"
-                onPress={() => void Linking.openURL(tournament.officialStoreUrl as string)}
-              />
-            </Card>
-          ) : null}
+          {/* T-08-12 / 1-26 */}
+          <StoreCarousel goodsFacilities={goodsFacilities} officialStoreUrl={tournament.officialStoreUrl} />
 
           {hasTickets ? (
             <Card style={{ gap: space.md }}>
