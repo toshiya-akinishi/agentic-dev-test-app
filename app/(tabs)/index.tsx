@@ -1,13 +1,37 @@
+/**
+ * ホーム `/`（EP-06 / 04-screen-spec.md 2章「ホーム」）。
+ * 構成: 緊急バナー（app/_layout.tsx で全画面共通表示）/ ハイライトカルーセル(2-14) /
+ *       広告枠 home_top_banner(8-3) / 開催中・直近大会カード(3-1) /
+ *       お気に入り選手ニュース(4-2) / 最新ニュース5件(1-11) / 広告枠 home_inline(8-3)
+ */
 import React from 'react'
-import { ScrollView } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 
-import { EmptyState } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
+import {
+  AdBanner,
+  FavoriteNewsSection,
+  HighlightCarousel,
+  LatestNewsSection,
+  TournamentCard,
+} from '../../src/features/home'
+import { colors } from '../../src/theme'
 
-/** ホーム — 実装は後続 Epic で差し替える（EP-04 の骨組み） */
-export default function Screen() {
+export default function HomeScreen() {
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <EmptyState title="ホーム" description="この画面は後続の Epic で実装します。" />
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <OfflineBar />
+      <HighlightCarousel />
+      <AdBanner slot="home_top_banner" />
+      <TournamentCard />
+      <FavoriteNewsSection />
+      <LatestNewsSection />
+      <AdBanner slot="home_inline" />
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.bg },
+  content: { paddingBottom: 32 },
+})
