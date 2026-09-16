@@ -40,3 +40,31 @@ export const mediaUrl = (
 
 /** Payload の `in` 演算子はカンマ区切り文字列で渡す（docs/03-api-spec.md 2章） */
 export const commaList = (ids: Array<number | string>): string => ids.join(',')
+
+/**
+ * リッチテキスト本文中の手動リンク（補-1-2-3: 自動リンク化はしない）の遷移先を
+ * アプリ内ルートへ解決する。観戦ガイド記事・用語集・ニュース詳細の全画面から共通で使う。
+ * 対応先が無い relationTo は `undefined` を返し、呼び出し側で外部 URL にフォールバックさせる。
+ */
+export const internalRouteFor = (target: {
+  relationTo?: string
+  id?: string
+}): string | undefined => {
+  if (!target.id) return undefined
+  switch (target.relationTo) {
+    case 'glossary-terms':
+      return `/glossary/${target.id}`
+    case 'guide-articles':
+      // 補足: guide-articles の詳細ルートは slug 引きだが、リレーション値は id しか
+      // 持たないことがあるため `useGuideArticle` 側で slug/id どちらでも解決する
+      return `/guide/${target.id}`
+    case 'news':
+      return `/news/${target.id}`
+    case 'players':
+      return `/player/${target.id}`
+    case 'tournaments':
+      return `/tournament/${target.id}`
+    default:
+      return undefined
+  }
+}

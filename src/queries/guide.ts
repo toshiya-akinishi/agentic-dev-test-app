@@ -2,6 +2,7 @@
  * 観戦ガイド・用語集のデータ取得フック（EP-09 / 要求 1-1, 1-2）。
  * 画面からは必ずこのフック経由で取得する（AGENTS.md 3章）。
  */
+import { or } from '../api/query'
 import { useList, useDoc, type PaginatedResponse } from './hooks'
 import { qk } from './keys'
 import type { GlossaryTerm, GuideArticle } from '../types/payload'
@@ -34,19 +35,24 @@ export const useGuideArticles = (category?: GuideCategory) =>
 
 /**
  * ガイド記事詳細（補-1-1-2: 見出し + 本文 + 画像 0..n + 動画 0..1）。
- * ルートは slug 引きなので where で 1 件取得する。
+ * ルートは slug 引きだが、本文中の relationship リンク（補-1-2-3）は id しか
+ * 持たないことがあるため、slug 一致 OR id 一致のどちらでも解決できるようにする。
  * depth=2 で `video.thumbnail` / `video.file` まで展開する。
  */
-export const useGuideArticle = (slug: string | undefined) => {
+export const useGuideArticle = (slugOrId: string | undefined) => {
+  const idIfNumeric = slugOrId && /^\d+$/.test(slugOrId) ? Number(slugOrId) : undefined
   const query = useList<GuideArticle>(
-    qk.guideArticle(slug ?? ''),
+    qk.guideArticle(slugOrId ?? ''),
     'guide-articles',
     {
-      where: { slug: { equals: slug ?? '' } },
+      where: or(
+        { slug: { equals: slugOrId ?? '' } },
+        idIfNumeric !== undefined ? { id: { equals: idIfNumeric } } : undefined,
+      ),
       limit: 1,
       depth: 2,
     },
-    { enabled: Boolean(slug) },
+    { enabled: Boolean(slugOrId) },
   )
   return { ...query, article: firstDoc(query.data) }
 }

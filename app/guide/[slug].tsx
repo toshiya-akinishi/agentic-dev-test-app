@@ -8,6 +8,7 @@ import React from 'react'
 import { Linking, ScrollView, StyleSheet, View } from 'react-native'
 
 import { Badge, EmptyState, ErrorView, SkeletonList, Txt } from '../../src/components/ui'
+import { internalRouteFor } from '../../src/features/common'
 import { GuideImageGallery, GuideVideo } from '../../src/features/guide'
 import { formatDateFull } from '../../src/lib/format'
 import { RichText, type RichTextLinkTarget } from '../../src/lib/richtext'
@@ -16,12 +17,9 @@ import { colors, space } from '../../src/theme'
 
 /** 手動設定されたリンクの遷移先を決める（補-1-2-3） */
 const openLink = (target: RichTextLinkTarget) => {
-  if (target.relationTo === 'glossary-terms' && target.id) {
-    router.push(`/glossary/${target.id}`)
-    return
-  }
-  if (target.relationTo === 'guide-articles' && target.id) {
-    router.push(`/guide/${target.id}`)
+  const route = internalRouteFor(target)
+  if (route) {
+    router.push(route)
     return
   }
   if (target.url) void Linking.openURL(target.url).catch(() => undefined)
