@@ -13,6 +13,11 @@ import { LoginPromptSheet } from '../src/features/auth'
 import { setAnalyticsIdentity, setAnalyticsOnline, startAnalytics, trackScreenView } from '../src/lib/analytics'
 import { OFFLINE_CACHE_TTL_MS, persister, queryClient, shouldDehydrateQuery } from '../src/queries/client'
 import {
+  useEmergencyBannerSync,
+  useRegisterDeviceToken,
+  useUnreadNotificationCountSync,
+} from '../src/queries/notifications'
+import {
   authReadyAtom,
   authUserAtom,
   deviceIdAtom,
@@ -47,6 +52,11 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
 
   useNetworkWatcher()
   useAppFocusManager()
+
+  // T-14-1 / T-14-4 / T-14-11: 通知基盤の起動時同期（デバイストークン登録・緊急バナー・未読バッジ）
+  useRegisterDeviceToken()
+  useEmergencyBannerSync()
+  useUnreadNotificationCountSync()
 
   // API クライアントへ token / deviceId を供給する（循環参照を避けるため関数注入）
   useEffect(() => {

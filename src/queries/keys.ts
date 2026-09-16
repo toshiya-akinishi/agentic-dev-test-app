@@ -90,6 +90,9 @@ export const qk = {
   notificationSettings: (owner: string) => ['notification-settings', owner] as const,
   notifications: (owner: string, params?: unknown) =>
     ['notifications', owner, params ?? {}] as const,
+  /** 補-1-23-4: 緊急バナー判定用の大会一覧（live/cancelled/postponed） */
+  emergencyStatus: () => ['emergency-status'] as const,
+  deviceTokens: (owner: string) => ['device-tokens', owner] as const,
 
   ticketTypes: (tournamentId: string) => ['ticket-types', tournamentId] as const,
   /** 補-5-1-1: 大会一覧の「チケット販売中」バッジ判定用（複数大会分をまとめて1回で取得） */
