@@ -19,6 +19,7 @@ import {
 
 import { Skeleton, Txt } from '../../components/ui'
 import { mediaUrl } from '../common'
+import { useAdaptiveImageSize } from '../../lib/network'
 import { HOME_CAROUSEL_INTERVAL_MS, useHomeCarousel } from '../../queries/highlights'
 import { autoplayEnabledAtom } from '../../store/network'
 import { colors, radius, space } from '../../theme'
@@ -27,6 +28,7 @@ import type { Video } from '../../types/payload'
 export const HighlightCarousel = () => {
   const { slides, isLoading } = useHomeCarousel()
   const autoplay = useAtomValue(autoplayEnabledAtom)
+  const imageSize = useAdaptiveImageSize('hero')
   const { width } = useWindowDimensions()
   const [index, setIndex] = useState(0)
   const listRef = useRef<FlatList<Video>>(null)
@@ -69,7 +71,7 @@ export const HighlightCarousel = () => {
             style={{ width }}
           >
             <Image
-              source={{ uri: mediaUrl(item.thumbnail, 'hero') }}
+              source={{ uri: mediaUrl(item.thumbnail, imageSize) }}
               contentFit="cover"
               style={[styles.slideImage, { width }]}
             />

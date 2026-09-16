@@ -1,5 +1,6 @@
 /** API クライアント（T-04-3）。エラーは ApiError に正規化する。 */
 import { buildQueryString, type ListParams } from './query'
+import { notifyNetworkActivity, recordLatency } from '../lib/network'
 
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:3000'
@@ -70,6 +71,7 @@ export const request = async <T>(path: string, options: RequestOptions = {}): Pr
     ...options.headers,
   }
 
+  const startedAt = Date.now()
   let res: Response
   try {
     res = await fetch(`${API_URL}${path}`, {
@@ -80,6 +82,8 @@ export const request = async <T>(path: string, options: RequestOptions = {}): Pr
       credentials: 'include',
     })
   } catch (e) {
+    // 補-8-2-2: 応答時間としては記録せず、接続状態の再チェックだけ即時トリガーする
+    notifyNetworkActivity()
     throw new ApiError(
       '通信できませんでした。電波状況をご確認ください。',
       0,
@@ -87,6 +91,8 @@ export const request = async <T>(path: string, options: RequestOptions = {}): Pr
       true,
     )
   }
+  // 補-8-2-2: 応答時間の移動平均（ネットワーク品質3段階判定に使う）
+  recordLatency(Date.now() - startedAt)
 
   if (res.status === 204) return undefined as T
 

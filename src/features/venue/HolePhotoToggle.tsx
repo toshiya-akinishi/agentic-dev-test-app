@@ -8,12 +8,15 @@ import { StyleSheet, View } from 'react-native'
 
 import { Tabs, Txt } from '../../components/ui'
 import { mediaUrl } from '../common'
+import { useAdaptiveImageSize } from '../../lib/network'
 import { colors, radius } from '../../theme'
 import type { Hole } from '../../types/payload'
 
 export const HolePhotoToggle = ({ hole }: { hole: Hole }) => {
-  const photoUrl = mediaUrl(hole.photo, 'hero')
-  const illustrationUrl = mediaUrl(hole.illustration, 'hero')
+  /** 補-8-2-1(d): 低速時は hero ではなく card サイズを読み込む */
+  const imageSize = useAdaptiveImageSize('hero')
+  const photoUrl = mediaUrl(hole.photo, imageSize)
+  const illustrationUrl = mediaUrl(hole.illustration, imageSize)
   const [mode, setMode] = useState<'photo' | 'illustration'>(photoUrl ? 'photo' : 'illustration')
 
   const url = mode === 'photo' ? photoUrl : illustrationUrl
