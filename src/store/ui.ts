@@ -43,6 +43,19 @@ export const facilityFilterAtom = atom<string[]>([])
 /** 通知センターの未読件数バッジ（補-6-17-1） */
 export const unreadNotificationCountAtom = atom(0)
 
+/* ---------------- ショットビュー（EP-11 / 1-37〜1-47） ---------------- */
+
+/** 補-1-43-1: 比較対象選手（お気に入りから最大4名 / ADR-007 と同じ上限）。ラウンド切替をまたいで保持する */
+export const MAX_SHOTVIEW_PLAYERS = 4
+export const shotviewPlayerIdsAtom = atom<string[]>([])
+/** 補-1-46-1: 表示中ホール（チップ横スクロールで切替。ラウンドごとに保持） */
+export const shotviewHoleAtom = atomFamily((_roundId: string) => atom<number>(1))
+/** 補-1-47-1: エリア別成功確率ヒートマップの表示トグル（右上） */
+export const shotviewHeatmapAtom = atom(false)
+/** 補-1-44-1: 向き反転（ティー基準⇄グリーン基準） */
+export type ShotviewOrientation = 'tee' | 'green'
+export const shotviewOrientationAtom = atom<ShotviewOrientation>('tee')
+
 /** 緊急バナー（補-1-23-4） */
 export type EmergencyBanner = { id: string; title: string; type: string } | null
 export const emergencyBannerAtom = atom<EmergencyBanner>(null)

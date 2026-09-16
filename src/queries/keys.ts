@@ -10,6 +10,8 @@ export const qk = {
   tournaments: (params?: unknown) => ['tournaments', params ?? {}] as const,
   tournament: (id: string) => ['tournament', id] as const,
   rounds: (tournamentId: string) => ['rounds', tournamentId] as const,
+  /** EP-11 ショットビュー: `/shotview/[roundId]` はラウンド単体を起点に大会/コースへ辿る */
+  round: (id: string) => ['round', id] as const,
   pairings: (roundId: string) => ['pairings', roundId] as const,
 
   leaderboard: (tournamentId: string, params?: unknown) =>
