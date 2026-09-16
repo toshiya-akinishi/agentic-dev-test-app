@@ -41,6 +41,11 @@ export const qk = {
   players: (params?: unknown) => ['players', params ?? {}] as const,
   player: (id: string) => ['player', id] as const,
   playerStories: (playerId: string) => ['player-stories', playerId] as const,
+  /** T-13-2 成績タブ: 選手起点の大会別最終成績（scores を player で引きラウンド横断で集約） */
+  playerResults: (playerId: string) => ['player-results', playerId] as const,
+  /** T-13-2 / 補-4-14-1, 2: `GET /api/players/cut-probability`（T-13-7） */
+  cutProbability: (tournamentId: string, playerId: string, round?: number) =>
+    ['cut-probability', tournamentId, playerId, round ?? 'default'] as const,
 
   videos: (params?: unknown) => ['videos', params ?? {}] as const,
   video: (id: string) => ['video', id] as const,

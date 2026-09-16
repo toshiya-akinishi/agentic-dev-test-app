@@ -8,10 +8,11 @@
 import { useAtomValue } from 'jotai'
 import { useMemo } from 'react'
 
+import { ApiError, createDoc, deleteDoc, updateDoc } from '../api/client'
 import { or } from '../api/query'
 import { commaList, relDoc, relId } from '../features/common'
 import { authUserAtom, deviceIdAtom } from '../store/auth'
-import { useList } from './hooks'
+import { useApiMutation, useList, useQueryClient } from './hooks'
 import { qk } from './keys'
 import type { Favorite, Player, Round, Score, Tournament } from '../types/payload'
 
@@ -48,23 +49,87 @@ export const useFavoritePlayers = () => {
     { enabled: Boolean(user || deviceId) },
   )
 
+  const favorites = query.data?.docs ?? []
+
   const players = useMemo<Player[]>(
-    () =>
-      (query.data?.docs ?? [])
-        .map((f) => relDoc<Player>(f.player))
-        .filter((p): p is Player => Boolean(p)),
-    [query.data],
+    () => favorites.map((f) => relDoc<Player>(f.player)).filter((p): p is Player => Boolean(p)),
+    [favorites],
   )
 
   const playerIds = useMemo(
-    () =>
-      (query.data?.docs ?? [])
-        .map((f) => relId(f.player))
-        .filter((x): x is number => typeof x === 'number'),
-    [query.data],
+    () => favorites.map((f) => relId(f.player)).filter((x): x is number => typeof x === 'number'),
+    [favorites],
   )
 
-  return { ...query, players, playerIds }
+  /** T-13-5/T-13-6: プレイヤー id → 該当 favorite ドキュメント id（解除・並べ替えに使用） */
+  const favoriteIdByPlayerId = useMemo(() => {
+    const map = new Map<number, number>()
+    for (const f of favorites) {
+      const pid = relId(f.player)
+      if (typeof pid === 'number') map.set(pid, f.id)
+    }
+    return map
+  }, [favorites])
+
+  return { ...query, favorites, players, playerIds, favoriteIdByPlayerId, ownerKey }
+}
+
+/**
+ * お気に入り選手の登録/解除（T-13-5 / 補-4-12-1, 2, 4）。
+ * 選手一覧・選手詳細・リーダーボード・お気に入り一覧のどこからでも同じフックを呼び、
+ * 即時に状態が同期される（`qk.favorites` の invalidate で共通反映）。
+ * ADR-006: 上限 10 名。上限到達時はクライアント側でチェックしエラーを投げる
+ * （`Favorites` コレクション側にサーバ側の上限強制が無いための補完 — 既知のギャップ）。
+ */
+export const useToggleFavoritePlayer = () => {
+  const user = useAtomValue(authUserAtom)
+  const deviceId = useAtomValue(deviceIdAtom)
+  const ownerKey = user ? `user:${user.id}` : deviceId ? `device:${deviceId}` : 'none'
+  const queryClient = useQueryClient()
+
+  return useApiMutation<
+    void,
+    { playerId: number; favoriteId?: number; currentCount: number; nextOrder: number }
+  >(
+    async ({ playerId, favoriteId, currentCount, nextOrder }) => {
+      if (favoriteId) {
+        await deleteDoc('favorites', favoriteId)
+        return
+      }
+      if (currentCount >= MAX_FAVORITES) {
+        throw new ApiError(`お気に入り選手は${MAX_FAVORITES}名まで登録できます`, 400)
+      }
+      await createDoc<Favorite>('favorites', {
+        player: playerId,
+        order: nextOrder,
+        ...(user ? { owner: user.id } : deviceId ? { deviceId } : {}),
+      })
+    },
+    {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: qk.favorites(ownerKey) })
+      },
+    },
+  )
+}
+
+/** 補-4-12-3: お気に入り一覧の並べ替え（`favorites.order` を更新するだけの薄いラッパ） */
+export const useReorderFavoritePlayer = () => {
+  const user = useAtomValue(authUserAtom)
+  const deviceId = useAtomValue(deviceIdAtom)
+  const ownerKey = user ? `user:${user.id}` : deviceId ? `device:${deviceId}` : 'none'
+  const queryClient = useQueryClient()
+
+  return useApiMutation<void, { favoriteId: number; order: number }>(
+    async ({ favoriteId, order }) => {
+      await updateDoc<Favorite>('favorites', favoriteId, { order })
+    },
+    {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: qk.favorites(ownerKey) })
+      },
+    },
+  )
 }
 
 /**
