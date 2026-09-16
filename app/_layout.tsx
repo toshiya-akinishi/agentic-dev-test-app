@@ -1,7 +1,7 @@
 /** ルートレイアウト（T-04-1, T-04-2, T-04-4, T-04-5, T-04-7） */
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { router, Stack } from 'expo-router'
-import { Provider as JotaiProvider, useSetAtom } from 'jotai'
+import { router, Stack, usePathname } from 'expo-router'
+import { Provider as JotaiProvider, useAtomValue, useSetAtom } from 'jotai'
 import React, { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar'
 import { setAuthSupplier } from '../src/api/client'
 import { EmergencyBanner } from '../src/components/EmergencyBanner'
 import { LoginPromptSheet } from '../src/features/auth'
+import { setAnalyticsIdentity, setAnalyticsOnline, startAnalytics, trackScreenView } from '../src/lib/analytics'
 import { OFFLINE_CACHE_TTL_MS, persister, queryClient, shouldDehydrateQuery } from '../src/queries/client'
 import {
   authReadyAtom,
@@ -21,8 +22,18 @@ import {
   tokenAtom,
   type AuthUser,
 } from '../src/store/auth'
+import { isOfflineAtom } from '../src/store/network'
 import { useAppFocusManager, useNetworkWatcher } from '../src/lib/network'
 import { colors } from '../src/theme'
+
+/** T-15-7 / 補-8-7-2: 画面遷移のたびに screen_view を自動送信する */
+const ScreenViewTracker = () => {
+  const pathname = usePathname()
+  useEffect(() => {
+    trackScreenView(pathname)
+  }, [pathname])
+  return null
+}
 
 /** 起動時の認証・deviceId 復元（補-6-1-1） */
 const Bootstrap = ({ children }: { children: React.ReactNode }) => {
@@ -31,6 +42,8 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
   const setUser = useSetAtom(authUserAtom)
   const setReady = useSetAtom(authReadyAtom)
   const [state, setState] = useState<{ token?: string; deviceId?: string }>({})
+  const user = useAtomValue(authUserAtom)
+  const isOffline = useAtomValue(isOfflineAtom)
 
   useNetworkWatcher()
   useAppFocusManager()
@@ -39,6 +52,17 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     setAuthSupplier(() => state)
   }, [state])
+
+  // T-15-4, 5: 計測クライアントへ識別子とオンライン状態を供給する
+  useEffect(() => {
+    setAnalyticsIdentity({ deviceId: state.deviceId, userId: user?.id })
+  }, [state.deviceId, user])
+  useEffect(() => {
+    setAnalyticsOnline(!isOffline)
+  }, [isOffline])
+  useEffect(() => {
+    startAnalytics()
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -100,6 +124,7 @@ export default function RootLayout() {
           >
             <Bootstrap>
               <StatusBar style="dark" />
+              <ScreenViewTracker />
               <EmergencyBanner />
               <LoginPromptSheet />
               <Stack

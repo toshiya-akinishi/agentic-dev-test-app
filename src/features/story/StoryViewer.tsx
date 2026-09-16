@@ -6,6 +6,7 @@
  */
 import { Image } from 'expo-image'
 import { useVideoPlayer, VideoView } from 'expo-video'
+import { useAtomValue } from 'jotai'
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Dimensions,
@@ -18,6 +19,9 @@ import {
 
 import { Txt } from '../../components/ui'
 import { mediaUrl } from '../common'
+import { createVideoProgressTracker, trackVideoComplete, trackVideoStart } from '../../lib/analytics'
+import { useAdaptiveImageSize } from '../../lib/network'
+import { autoplayEnabledAtom } from '../../store/network'
 import { colors, space } from '../../theme'
 import type { Video } from '../../types/payload'
 
@@ -114,13 +118,19 @@ const StoryItem = ({
   onEnded: () => void
 }) => {
   const source = shouldLoad ? videoSourceOf(video) : null
+  /** 補-8-2-1(a): 低速時は動画の自動再生を止める（手動タップでの再生は常に可能） */
+  const autoplayEnabled = useAtomValue(autoplayEnabledAtom)
   const player = useVideoPlayer(source, (p) => {
     p.loop = false
+    p.timeUpdateEventInterval = 1
   })
-  const [paused, setPaused] = useState(false)
+  const [paused, setPaused] = useState(!autoplayEnabled)
+  const tracker = useRef(createVideoProgressTracker(video.id)).current
+  const startedRef = useRef(false)
 
   useEffect(() => {
-    if (active) setPaused(false)
+    if (active) setPaused(!autoplayEnabled)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active])
 
   useEffect(() => {
@@ -129,12 +139,29 @@ const StoryItem = ({
   }, [active, paused, player])
 
   useEffect(() => {
-    const sub = player.addListener('playToEnd', onEnded)
-    return () => sub.remove()
+    const endSub = player.addListener('playToEnd', () => {
+      trackVideoComplete(video.id)
+      onEnded()
+    })
+    const playingSub = player.addListener('playingChange', ({ isPlaying }) => {
+      if (isPlaying && !startedRef.current) {
+        startedRef.current = true
+        trackVideoStart(video.id)
+      }
+    })
+    const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
+      tracker.onProgress(currentTime, player.duration)
+    })
+    return () => {
+      endSub.remove()
+      playingSub.remove()
+      timeSub.remove()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player])
 
-  const thumb = mediaUrl(video.thumbnail, 'hero')
+  const imageSize = useAdaptiveImageSize('hero')
+  const thumb = mediaUrl(video.thumbnail, imageSize)
 
   return (
     <Pressable

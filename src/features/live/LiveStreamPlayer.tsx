@@ -4,18 +4,23 @@
  * 補-2-1-2: `status=ended` になったら自動的に `archiveVideo` へ切り替える。
  */
 import { useVideoPlayer, VideoView } from 'expo-video'
-import React, { useMemo } from 'react'
+import { useAtomValue } from 'jotai'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { Badge, Txt } from '../../components/ui'
 import { mediaUrl, relDoc } from '../common'
+import { createVideoProgressTracker, trackVideoComplete, trackVideoStart } from '../../lib/analytics'
 import { formatDelay, LIVE_KIND_LABELS } from '../../queries/liveStreams'
+import { autoplayEnabledAtom } from '../../store/network'
 import { colors, radius, space } from '../../theme'
 import type { LiveStream, Video } from '../../types/payload'
 
 export const LiveStreamPlayer = ({ stream }: { stream: LiveStream }) => {
   const archiveVideo = relDoc<Video>(stream.archiveVideo)
   const ended = stream.status === 'ended'
+  /** 補-8-2-1(a): 低速時は自動再生を止める。ネイティブコントロールから手動再生できる */
+  const autoplayEnabled = useAtomValue(autoplayEnabledAtom)
 
   // 補-2-1-2: 終了後はアーカイブ動画へ、それ以外は streamUrl（MOCK）で再生
   const source = useMemo(() => {
@@ -25,8 +30,32 @@ export const LiveStreamPlayer = ({ stream }: { stream: LiveStream }) => {
 
   const player = useVideoPlayer(source, (p) => {
     p.loop = true
-    if (!ended) p.play()
+    p.timeUpdateEventInterval = 1
+    if (!ended && autoplayEnabled) p.play()
   })
+
+  /** T-15-6: アーカイブ再生時のみ視聴進捗を計測する（ライブ本編は継続的なため対象外） */
+  const tracker = useRef(createVideoProgressTracker(archiveVideo?.id ?? stream.id)).current
+  const startedRef = useRef(false)
+  useEffect(() => {
+    if (!ended || !archiveVideo) return
+    const endSub = player.addListener('playToEnd', () => trackVideoComplete(archiveVideo.id))
+    const playingSub = player.addListener('playingChange', ({ isPlaying }) => {
+      if (isPlaying && !startedRef.current) {
+        startedRef.current = true
+        trackVideoStart(archiveVideo.id)
+      }
+    })
+    const timeSub = player.addListener('timeUpdate', ({ currentTime }) => {
+      tracker.onProgress(currentTime, player.duration)
+    })
+    return () => {
+      endSub.remove()
+      playingSub.remove()
+      timeSub.remove()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player, ended, archiveVideo?.id])
 
   return (
     <View>
