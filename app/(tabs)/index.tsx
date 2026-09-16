@@ -9,8 +9,8 @@ import React from 'react'
 import { ScrollView, StyleSheet } from 'react-native'
 
 import { OfflineBar } from '../../src/components/OfflineBar'
+import { AdSlot } from '../../src/features/ads'
 import {
-  AdBanner,
   FavoriteHighlightLanes,
   FavoriteNewsSection,
   HighlightCarousel,
@@ -24,12 +24,12 @@ export default function HomeScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <OfflineBar />
       <HighlightCarousel />
-      <AdBanner slot="home_top_banner" />
+      <AdSlot slot="home_top_banner" />
       <TournamentCard />
       <FavoriteHighlightLanes />
       <FavoriteNewsSection />
       <LatestNewsSection />
-      <AdBanner slot="home_inline" />
+      <AdSlot slot="home_inline" />
     </ScrollView>
   )
 }

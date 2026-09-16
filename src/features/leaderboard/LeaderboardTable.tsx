@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { Button, Tabs, Txt } from '../../components/ui'
+import { AdSlot } from '../ads'
 import { formatToPar } from '../../lib/format'
 import { usePlayerRoundShots } from '../../queries/playByPlay'
 import { colors, space } from '../../theme'
@@ -159,6 +160,12 @@ export const LeaderboardTable = ({
                 onToggleCheck={() => onToggleSelect(entry.player.id)}
                 isFavorite={favoritePlayerIds.has(entry.player.id)}
               />
+              {/* 補-8-3-1: leaderboard_inline（10行ごと） */}
+              {(i + 1) % 10 === 0 && i !== entries.length - 1 ? (
+                <View style={{ width: tableWidth }}>
+                  <AdSlot slot="leaderboard_inline" tournamentId={tournamentId} />
+                </View>
+              ) : null}
             </React.Fragment>
           ))}
         </View>

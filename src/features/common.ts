@@ -22,6 +22,12 @@ export const relIds = (list: Array<Rel<{ id: number }>> | null | undefined): num
 
 export const uniqIds = (ids: number[]): number[] => Array.from(new Set(ids))
 
+/** CMS 相対パス（例 `/api/media/file/foo.jpg`）に API_URL を前置して絶対 URL にする */
+export const absoluteMediaUrl = (url: string | null | undefined): string | undefined => {
+  if (!url) return undefined
+  return /^https?:\/\//.test(url) ? url : `${API_URL}${url}`
+}
+
 /**
  * Payload の media.url は CMS 相対パス（例 `/api/media/file/foo.jpg`）で返るため
  * API_URL を前置して絶対 URL にする。
@@ -34,8 +40,7 @@ export const mediaUrl = (
   if (!doc) return undefined
   const sized = size ? doc.sizes?.[size]?.url : undefined
   const url = sized ?? doc.url
-  if (!url) return undefined
-  return /^https?:\/\//.test(url) ? url : `${API_URL}${url}`
+  return absoluteMediaUrl(url)
 }
 
 /** Payload の `in` 演算子はカンマ区切り文字列で渡す（docs/03-api-spec.md 2章） */

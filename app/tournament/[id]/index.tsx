@@ -7,8 +7,10 @@ import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { Button, Card, ErrorView, Loading, StatusBadge, Txt } from '../../../src/components/ui'
+import { OfflineBar } from '../../../src/components/OfflineBar'
 import { useLoginGate } from '../../../src/features/auth'
 import { relDoc } from '../../../src/features/common'
+import { AdSlot } from '../../../src/features/ads'
 import { TournamentTabs } from '../../../src/features/tournaments'
 import {
   AccessInfoSection,
@@ -44,6 +46,7 @@ export default function TournamentOverviewScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: tournament?.name ?? '大会詳細' }} />
+      <OfflineBar />
       <TournamentTabs tournamentId={id} active="overview" />
 
       {isLoading ? (
@@ -66,6 +69,9 @@ export default function TournamentOverviewScreen() {
             <Row label="日程" value={formatDateRange(tournament.startDate, tournament.endDate)} />
             <Row label="賞金総額" value={formatMoney(tournament.prizeMoneyTotal)} />
           </Card>
+
+          {/* 補-8-3-1: tournament_detail_banner（タイアップ記事） */}
+          <AdSlot slot="tournament_detail_banner" tournamentId={tournament.id} />
 
           {/* T-08-2 / 1-14 */}
           <GoogleMapQrCard googleMapUrl={venue?.googleMapUrl} venueName={venue?.name} />
