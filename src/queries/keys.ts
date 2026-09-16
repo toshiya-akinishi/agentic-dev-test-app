@@ -23,6 +23,8 @@ export const qk = {
     ['hole-statistics', tournamentId, hole ?? 'all'] as const,
 
   rankings: (seasonId: string, type: string) => ['rankings', seasonId, type] as const,
+  /** 補-1-5-1: 賞金「直近」タブ用に money 型の直近2スナップショットをまとめて取得する */
+  rankingsRecentMoney: (seasonId: string) => ['rankings', 'recent-money', seasonId] as const,
 
   players: (params?: unknown) => ['players', params ?? {}] as const,
   player: (id: string) => ['player', id] as const,
@@ -62,7 +64,10 @@ export const qk = {
     ['notifications', owner, params ?? {}] as const,
 
   ticketTypes: (tournamentId: string) => ['ticket-types', tournamentId] as const,
+  /** 補-5-1-1: 大会一覧の「チケット販売中」バッジ判定用（複数大会分をまとめて1回で取得） */
+  ticketTypesOnSale: (tournamentIds: string) => ['ticket-types', 'on-sale', tournamentIds] as const,
   myTickets: () => ['tickets', 'me'] as const,
+  ticket: (id: string) => ['ticket', id] as const,
 
   ad: (slot: string, ctx?: unknown) => ['ad', slot, ctx ?? {}] as const,
 
@@ -76,7 +81,7 @@ export const qk = {
 
 /**
  * オフライン永続化の対象にする queryKey の先頭要素（補-8-1-1）。
- * 大会情報 / 組み合わせ / コース / 会場マップ / 用語集 / 観戦ガイド / チケット / 通知センター。
+ * 大会情報 / 組み合わせ / ランキング / コース / 会場マップ / 用語集 / 観戦ガイド / チケット / 通知センター。
  */
 /**
  * ログアウト時にクリアする対象の queryKey 先頭要素（補-6-6-1）。
@@ -99,6 +104,7 @@ export const PERSISTED_KEY_ROOTS = new Set<string>([
   'tournament',
   'rounds',
   'pairings',
+  'rankings',
   'venues',
   'courses',
   'holes',
