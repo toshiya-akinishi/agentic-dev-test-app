@@ -21,7 +21,7 @@ import {
   tokenAtom,
   type AuthUser,
 } from '../src/store/auth'
-import { useNetworkWatcher } from '../src/lib/network'
+import { useAppFocusManager, useNetworkWatcher } from '../src/lib/network'
 import { colors } from '../src/theme'
 
 /** 起動時の認証・deviceId 復元（補-6-1-1） */
@@ -33,6 +33,7 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<{ token?: string; deviceId?: string }>({})
 
   useNetworkWatcher()
+  useAppFocusManager()
 
   // API クライアントへ token / deviceId を供給する（循環参照を避けるため関数注入）
   useEffect(() => {

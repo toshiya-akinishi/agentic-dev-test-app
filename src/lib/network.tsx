@@ -1,7 +1,9 @@
 /** ネットワーク品質の監視（8-2 / 補-8-2-1, 補-8-2-2） */
+import { focusManager } from '@tanstack/react-query'
 import * as Network from 'expo-network'
 import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useRef } from 'react'
+import { AppState, type AppStateStatus } from 'react-native'
 
 import { networkQualityAtom, type NetworkQuality } from '../store/network'
 
@@ -77,6 +79,22 @@ export const useNetworkWatcher = () => {
       sub?.remove?.()
     }
   }, [setQuality])
+}
+
+/**
+ * 補-3-1-2 / 補-1-31-1: フォアグラウンド復帰時にライブクエリ（`useLiveQuery` の `refetchOnWindowFocus`）を
+ * 即時再取得させるための AppState 連携。TanStack Query の focusManager は既定でブラウザの
+ * `visibilitychange` しか見ないため、React Native では明示的に AppState と結び付ける必要がある。
+ * アプリ起動時に1度だけ呼ぶ（`app/_layout.tsx`）。
+ */
+export const useAppFocusManager = () => {
+  useEffect(() => {
+    const onChange = (status: AppStateStatus) => {
+      focusManager.setFocused(status === 'active')
+    }
+    const sub = AppState.addEventListener('change', onChange)
+    return () => sub.remove()
+  }, [])
 }
 
 /** オフライン表示バー用に、キャッシュの最終更新時刻を保持する */
