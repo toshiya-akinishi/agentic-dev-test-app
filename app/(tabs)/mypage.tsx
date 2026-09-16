@@ -79,6 +79,11 @@ export default function MyPageScreen() {
           label="セキュリティ（2段階認証）"
           onPress={() => goAuthed('/mypage/security', 'セキュリティ設定にはログインが必要です')}
         />
+        <MenuRow
+          label="チケット"
+          onPress={() => goAuthed('/mypage/tickets', 'チケットの確認にはログインが必要です')}
+          last
+        />
       </Section>
 
       <Section title="ヘルプ・情報">
