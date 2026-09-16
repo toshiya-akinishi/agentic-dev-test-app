@@ -16,6 +16,7 @@ import { useAtomValue } from 'jotai'
 import {
   getCustom,
   getDoc,
+  getGlobal,
   listCollection,
   request,
   type PaginatedResponse,
@@ -72,6 +73,19 @@ export const useInfiniteList = <T>(
 /** 無限スクロールの結果を 1 本の配列に潰す */
 export const flattenPages = <T>(data?: { pages: PaginatedResponse<T>[] }): T[] =>
   data?.pages.flatMap((p) => p.docs) ?? []
+
+/** global（設定系）の取得。例: `app-settings` / `legal-documents`（6-15） */
+export const useGlobal = <T>(
+  key: readonly unknown[],
+  slug: string,
+  depth = 1,
+  options?: Partial<UseQueryOptions<T>>,
+) =>
+  useQuery<T>({
+    queryKey: key,
+    queryFn: () => getGlobal<T>(slug, depth),
+    ...options,
+  })
 
 /** カスタムエンドポイント（docs/03-api-spec.md 3章） */
 export const useCustom = <T>(

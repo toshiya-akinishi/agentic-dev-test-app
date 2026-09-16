@@ -2,10 +2,12 @@
 import React from 'react'
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   type StyleProp,
   type TextStyle,
@@ -23,6 +25,7 @@ type TxtProps = {
   color?: string
   style?: StyleProp<TextStyle>
   numberOfLines?: number
+  selectable?: boolean
 }
 
 export const Txt = ({
@@ -32,9 +35,11 @@ export const Txt = ({
   color = colors.text,
   style,
   numberOfLines,
+  selectable,
 }: TxtProps) => (
   <Text
     numberOfLines={numberOfLines}
+    selectable={selectable}
     style={[{ fontSize: font.size[size], fontWeight: font.weight[weight], color }, style]}
   >
     {children}
@@ -318,6 +323,95 @@ export const SectionHeader = ({
 
 export const Divider = () => <View style={styles.divider} />
 
+/* ---------------- フォーム ---------------- */
+
+/** ラベル・エラー表示つきのテキスト入力（EP-05 各フォームで共通利用） */
+export const TextField = ({
+  label,
+  error,
+  hint,
+  style,
+  containerStyle,
+  ...props
+}: React.ComponentProps<typeof TextInput> & {
+  label?: string
+  error?: string
+  hint?: string
+  containerStyle?: StyleProp<ViewStyle>
+}) => (
+  <View style={[{ gap: space.xs }, containerStyle]}>
+    {label ? (
+      <Txt size="sm" weight="medium" color={colors.textSub}>
+        {label}
+      </Txt>
+    ) : null}
+    <TextInput
+      placeholderTextColor={colors.textMuted}
+      style={[
+        styles.input,
+        error && { borderColor: colors.danger },
+        style,
+      ]}
+      {...props}
+    />
+    {hint && !error ? (
+      <Txt size="xs" color={colors.textMuted}>
+        {hint}
+      </Txt>
+    ) : null}
+    {error ? (
+      <Txt size="xs" color={colors.danger}>
+        {error}
+      </Txt>
+    ) : null}
+  </View>
+)
+
+/** チェックボックス（補-6-15-2: 規約同意など） */
+export const Checkbox = ({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  label: React.ReactNode
+}) => (
+  <Pressable
+    accessibilityRole="checkbox"
+    accessibilityState={{ checked }}
+    onPress={() => onChange(!checked)}
+    style={styles.checkboxRow}
+  >
+    <View style={[styles.checkboxBox, checked && styles.checkboxBoxChecked]}>
+      {checked ? <Txt color={colors.textInverse} size="sm" weight="bold">✓</Txt> : null}
+    </View>
+    <View style={{ flex: 1 }}>{label}</View>
+  </Pressable>
+)
+
+/** 下から出るシート（T-05-3 ログイン誘導シート等） */
+export const Sheet = ({
+  visible,
+  onClose,
+  children,
+}: {
+  visible: boolean
+  onClose: () => void
+  children: React.ReactNode
+}) => (
+  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <View style={styles.sheetRoot}>
+      <Pressable
+        accessibilityLabel="閉じる"
+        style={StyleSheet.absoluteFill}
+        onPress={onClose}
+      />
+      <View style={styles.sheetCard}>{children}</View>
+    </View>
+  </Modal>
+)
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.bgElevated,
@@ -363,4 +457,34 @@ const styles = StyleSheet.create({
     paddingBottom: space.md,
   },
   divider: { height: 1, backgroundColor: colors.border },
+  input: {
+    minHeight: 46,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    fontSize: font.size.md,
+    color: colors.text,
+    backgroundColor: colors.bgElevated,
+  },
+  checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  checkboxBox: {
+    width: 22,
+    height: 22,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkboxBoxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
+  sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
+  sheetCard: {
+    backgroundColor: colors.bgElevated,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: space.xl,
+    paddingBottom: space.xxl,
+  },
 })

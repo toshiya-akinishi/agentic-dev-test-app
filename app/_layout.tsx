@@ -1,6 +1,6 @@
 /** ルートレイアウト（T-04-1, T-04-2, T-04-4, T-04-5, T-04-7） */
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { Stack } from 'expo-router'
+import { router, Stack } from 'expo-router'
 import { Provider as JotaiProvider, useSetAtom } from 'jotai'
 import React, { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -9,12 +9,14 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setAuthSupplier } from '../src/api/client'
 import { EmergencyBanner } from '../src/components/EmergencyBanner'
+import { LoginPromptSheet } from '../src/features/auth'
 import { OFFLINE_CACHE_TTL_MS, persister, queryClient, shouldDehydrateQuery } from '../src/queries/client'
 import {
   authReadyAtom,
   authUserAtom,
   deviceIdAtom,
   ensureDeviceId,
+  loadGuestOnboardingDone,
   loadToken,
   tokenAtom,
   type AuthUser,
@@ -49,6 +51,7 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
       setState({ token, deviceId })
       setAuthSupplier(() => ({ token, deviceId }))
 
+      let restoredUser: AuthUser | null = null
       if (token) {
         try {
           const res = await fetch(
@@ -56,12 +59,21 @@ const Bootstrap = ({ children }: { children: React.ReactNode }) => {
             { headers: { Authorization: `JWT ${token}` } },
           )
           const json = (await res.json()) as { user?: AuthUser | null }
-          if (mounted && json?.user) setUser(json.user)
+          if (mounted && json?.user) {
+            restoredUser = json.user
+            setUser(json.user)
+          }
         } catch {
           // 起動時にサーバへ到達できなくてもアプリは使える（8-1）
         }
       }
       if (mounted) setReady(true)
+
+      // 6-12 / 補-6-12-1: 初回起動時のオンボーディング（未完了ならログイン有無に関わらず表示）
+      const onboardingDone = restoredUser
+        ? Boolean(restoredUser.onboardingCompleted)
+        : await loadGuestOnboardingDone()
+      if (mounted && !onboardingDone) router.push('/onboarding')
     })()
     return () => {
       mounted = false
@@ -88,6 +100,7 @@ export default function RootLayout() {
             <Bootstrap>
               <StatusBar style="dark" />
               <EmergencyBanner />
+              <LoginPromptSheet />
               <Stack
                 screenOptions={{
                   headerStyle: { backgroundColor: colors.bg },

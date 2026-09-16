@@ -116,6 +116,14 @@ export const listCollection = <T>(collection: string, params: ListParams = {}) =
 export const getDoc = <T>(collection: string, id: string | number, depth = 1) =>
   request<T>(`/api/${collection}/${id}?depth=${depth}`)
 
+/** global（設定系）の取得。例: `app-settings` / `legal-documents` */
+export const getGlobal = <T>(slug: string, depth = 1) =>
+  request<T>(`/api/globals/${slug}?depth=${depth}`)
+
+/** コレクションへの新規作成（標準 REST）。例: `inquiries` の送信（補-6-14-1） */
+export const createDoc = <T>(collection: string, body: unknown) =>
+  request<{ message?: string; doc: T }>(`/api/${collection}`, { method: 'POST', body })
+
 /** カスタムエンドポイント（docs/03-api-spec.md 3章） */
 export const getCustom = <T>(path: string, search?: Record<string, string | number | undefined>) => {
   const qs = search
