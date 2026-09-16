@@ -8,6 +8,7 @@ import React from 'react'
 import { Linking, ScrollView, StyleSheet, View } from 'react-native'
 
 import { Badge, EmptyState, ErrorView, SkeletonList, Txt } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { internalRouteFor } from '../../src/features/common'
 import { RelatedTerms } from '../../src/features/guide'
 import { RichText, type RichTextLinkTarget } from '../../src/lib/richtext'
@@ -33,6 +34,7 @@ export default function GlossaryTermScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '用語集' }} />
+        <OfflineBar />
         <SkeletonList rows={5} />
       </View>
     )
@@ -42,6 +44,7 @@ export default function GlossaryTermScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '用語集' }} />
+        <OfflineBar />
         <ErrorView error={error} onRetry={() => void refetch()} />
       </View>
     )
@@ -51,6 +54,7 @@ export default function GlossaryTermScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '用語集' }} />
+        <OfflineBar />
         <EmptyState
           icon="📘"
           title="用語が見つかりませんでした"
@@ -65,6 +69,7 @@ export default function GlossaryTermScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Stack.Screen options={{ title: term.term }} />
+      <OfflineBar />
 
       <View style={styles.header}>
         {term.category ? (

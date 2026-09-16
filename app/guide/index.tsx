@@ -14,6 +14,7 @@ import {
   Tabs,
   Txt,
 } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { GuideArticleCard } from '../../src/features/guide'
 import { GUIDE_CATEGORIES, useGuideArticles, type GuideCategory } from '../../src/queries/guide'
 import { colors, space } from '../../src/theme'
@@ -27,6 +28,7 @@ export default function GuideIndexScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '観戦ガイド' }} />
+      <OfflineBar />
 
       <Tabs
         value={category}

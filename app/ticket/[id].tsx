@@ -9,6 +9,7 @@ import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 
 import { ErrorView, Loading } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { TicketQrCard } from '../../src/features/tickets'
 import { useTicketOrder } from '../../src/queries/tickets'
 import { colors, space } from '../../src/theme'
@@ -20,6 +21,7 @@ export default function TicketDetailScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '電子チケット' }} />
+      <OfflineBar />
       {isLoading ? (
         <Loading />
       ) : error ? (

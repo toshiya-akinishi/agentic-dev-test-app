@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { FlatList, StyleSheet, Switch, View } from 'react-native'
 
 import { EmptyState, ErrorView, Loading, Tabs, Txt } from '../../../src/components/ui'
+import { OfflineBar } from '../../../src/components/OfflineBar'
 import { relId } from '../../../src/features/common'
 import { PairingGroupCard, TournamentTabs } from '../../../src/features/tournaments'
 import { useFavoritePlayers } from '../../../src/queries/home'
@@ -47,6 +48,7 @@ export default function PairingsScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '組み合わせ' }} />
+      <OfflineBar />
       <TournamentTabs tournamentId={id} active="pairings" />
 
       {rounds.length > 0 ? (

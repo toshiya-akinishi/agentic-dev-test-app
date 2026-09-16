@@ -12,6 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, View } from 'react-native'
 
 import { Badge, EmptyState, ErrorView, Loading, Tabs, Txt } from '../../../src/components/ui'
+import { OfflineBar } from '../../../src/components/OfflineBar'
 import { relDoc, relIds } from '../../../src/features/common'
 import { TournamentTabs } from '../../../src/features/tournaments'
 import {
@@ -146,6 +147,7 @@ export default function VenueMapScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '会場マップ' }} />
+      <OfflineBar />
       <TournamentTabs tournamentId={id} active="map" />
 
       {isLoading ? (

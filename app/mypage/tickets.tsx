@@ -9,6 +9,7 @@ import React, { useMemo } from 'react'
 import { SectionList, StyleSheet, View } from 'react-native'
 
 import { EmptyState, ErrorView, Loading, Txt } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { relDoc } from '../../src/features/common'
 import { TicketOrderRow } from '../../src/features/tickets'
 import { isTicketOrderValid } from '../../src/lib/tickets'
@@ -39,6 +40,7 @@ export default function MyTicketsScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: 'チケット' }} />
+      <OfflineBar />
       {isGuest ? (
         <EmptyState
           icon="🎫"

@@ -7,6 +7,7 @@ import React from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 
 import { Card, EmptyState, ErrorView, Loading, Txt } from '../../../../src/components/ui'
+import { OfflineBar } from '../../../../src/components/OfflineBar'
 import { relDoc } from '../../../../src/features/common'
 import { CourseHoleListRow } from '../../../../src/features/venue'
 import { TournamentTabs } from '../../../../src/features/tournaments'
@@ -28,6 +29,7 @@ export default function CourseScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: 'コース' }} />
+      <OfflineBar />
       <TournamentTabs tournamentId={id} active="course" />
 
       {loading ? (

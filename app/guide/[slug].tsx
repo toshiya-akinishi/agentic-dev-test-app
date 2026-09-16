@@ -8,6 +8,7 @@ import React from 'react'
 import { Linking, ScrollView, StyleSheet, View } from 'react-native'
 
 import { Badge, EmptyState, ErrorView, SkeletonList, Txt } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { internalRouteFor } from '../../src/features/common'
 import { GuideImageGallery, GuideVideo } from '../../src/features/guide'
 import { formatDateFull } from '../../src/lib/format'
@@ -33,6 +34,7 @@ export default function GuideArticleScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '観戦ガイド' }} />
+        <OfflineBar />
         <SkeletonList rows={6} />
       </View>
     )
@@ -42,6 +44,7 @@ export default function GuideArticleScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '観戦ガイド' }} />
+        <OfflineBar />
         <ErrorView error={error} onRetry={() => void refetch()} />
       </View>
     )
@@ -51,6 +54,7 @@ export default function GuideArticleScreen() {
     return (
       <View style={styles.screen}>
         <Stack.Screen options={{ title: '観戦ガイド' }} />
+        <OfflineBar />
         <EmptyState
           icon="📖"
           title="記事が見つかりませんでした"
@@ -65,6 +69,7 @@ export default function GuideArticleScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Stack.Screen options={{ title: guideCategoryLabel(article.category) }} />
+      <OfflineBar />
 
       {/* 補-1-1-2: 見出し */}
       <View style={styles.header}>

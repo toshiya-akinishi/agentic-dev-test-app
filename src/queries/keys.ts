@@ -108,10 +108,6 @@ export const qk = {
 } as const
 
 /**
- * オフライン永続化の対象にする queryKey の先頭要素（補-8-1-1）。
- * 大会情報 / 組み合わせ / ランキング / コース / 会場マップ / 用語集 / 観戦ガイド / チケット / 通知センター。
- */
-/**
  * ログアウト時にクリアする対象の queryKey 先頭要素（補-6-6-1）。
  * ユーザー固有データのみを対象にし、公開コンテンツのキャッシュ（大会/ニュース等）は残す。
  */
@@ -124,8 +120,13 @@ export const USER_SCOPED_KEY_ROOTS = new Set<string>([
   'playlists',
   'playlist',
   'tickets',
+  'ticket',
 ])
 
+/**
+ * オフライン永続化の対象にする queryKey の先頭要素（補-8-1-1）。
+ * 大会情報 / 組み合わせ / ランキング / コース / 会場マップ / 用語集 / 観戦ガイド / チケット / 通知センター。
+ */
 export const PERSISTED_KEY_ROOTS = new Set<string>([
   'app-settings',
   'seasons',
@@ -145,6 +146,10 @@ export const PERSISTED_KEY_ROOTS = new Set<string>([
   'guide-article',
   'faqs',
   'tickets',
+  /** 補-8-1-1: 電子チケット詳細（QR）。入場ゲートで電波が悪くても表示できる必要がある */
+  'ticket',
+  /** 補-8-1-1: 大会詳細のチケット導線（販売中バッジ・券種一覧）表示に使う */
+  'ticket-types',
   'notifications',
   'favorites',
 ])

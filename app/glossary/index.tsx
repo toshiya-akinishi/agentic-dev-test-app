@@ -8,6 +8,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { ErrorView, SkeletonList } from '../../src/components/ui'
+import { OfflineBar } from '../../src/components/OfflineBar'
 import { GlossaryList } from '../../src/features/guide'
 import { useGlossaryTerms } from '../../src/queries/guide'
 import { colors } from '../../src/theme'
@@ -19,6 +20,7 @@ export default function GlossaryIndexScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '用語集' }} />
+      <OfflineBar />
 
       {isLoading ? (
         <SkeletonList rows={8} />
