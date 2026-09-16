@@ -14,6 +14,12 @@ export const leaderboardFilterAtom = atomFamily((_tournamentId: string) =>
   atom<LeaderboardFilter>('all'),
 )
 export const leaderboardSearchAtom = atomFamily((_tournamentId: string) => atom(''))
+/** 絞り込み「組」選択時の対象組番号 */
+export const leaderboardGroupAtom = atomFamily((_tournamentId: string) => atom<number | undefined>(undefined))
+/** ラウンド切替（Hole-by-Hole/スタッツ展開・組フィルタの対象ラウンド） */
+export const leaderboardRoundAtom = atomFamily((_tournamentId: string) => atom<number | undefined>(undefined))
+/** 下部タブ: 順位表 / 速報（Play-by-play）切替（04-screen-spec.md 2章） */
+export const leaderboardViewAtom = atomFamily((_tournamentId: string) => atom<'board' | 'playbyplay'>('board'))
 
 /** 比較モードで選択中の選手（補-3-7-1: 最大4名 / ADR-007） */
 export const MAX_COMPARE_PLAYERS = 4

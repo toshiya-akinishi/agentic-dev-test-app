@@ -16,8 +16,18 @@ export const qk = {
     ['leaderboard', tournamentId, params ?? {}] as const,
   compare: (tournamentId: string, playerIds: string[]) =>
     ['leaderboard-compare', tournamentId, [...playerIds].sort().join(',')] as const,
+  /** 補-3-9-3: 大会累計スタッツ（選手 × 大会内の全ラウンド） */
+  playerTournamentScores: (tournamentId: string, playerId: string) =>
+    ['player-tournament-scores', tournamentId, playerId] as const,
+  /** 補-3-9-2: 選手起点の過去大会検索（出場大会履歴） */
+  playerTournamentHistory: (playerId: string) => ['player-tournament-history', playerId] as const,
+  /** 補-3-9-1: 過去大会検索の選手名検索 */
+  playerSearch: (query: string) => ['player-search', query] as const,
   playByPlay: (roundId: string, params?: unknown) =>
     ['play-by-play', roundId, params ?? {}] as const,
+  /** Hole-by-Hole の動画導線用（補-3-8-1a）: ラウンド × 選手のショット一覧 */
+  playerRoundShots: (roundId: string, playerId: string) =>
+    ['player-round-shots', roundId, playerId] as const,
   shots: (params?: unknown) => ['shots', params ?? {}] as const,
   holeStatistics: (tournamentId: string, hole?: number) =>
     ['hole-statistics', tournamentId, hole ?? 'all'] as const,
