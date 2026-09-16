@@ -6,6 +6,7 @@ import React from 'react'
 import { Pressable, StyleSheet } from 'react-native'
 
 import { Txt } from '../../components/ui'
+import { alertMutationError } from '../../lib/mutationFeedback'
 import { useLikedVideos, useToggleVideoLike } from '../../queries/likes'
 import { radius } from '../../theme'
 
@@ -21,7 +22,10 @@ export const LikeButton = ({
   const liked = likedVideoIds.has(videoId)
 
   const onPress = () => {
-    toggle.mutate({ videoId, likeId: likeIdByVideoId.get(videoId) })
+    toggle.mutate(
+      { videoId, likeId: likeIdByVideoId.get(videoId) },
+      { onError: (e) => alertMutationError(e) },
+    )
   }
 
   return (

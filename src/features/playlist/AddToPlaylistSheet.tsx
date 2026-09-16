@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native'
 
 import { Button, Sheet, TextField, Txt } from '../../components/ui'
+import { mutationErrorMessage } from '../../lib/mutationFeedback'
 import {
   MAX_PLAYLISTS_PER_OWNER,
   MAX_PLAYLIST_ITEMS,
@@ -31,12 +32,15 @@ export const AddToPlaylistSheet = ({
   const createPlaylist = useCreatePlaylist()
   const [newName, setNewName] = useState('')
   const [message, setMessage] = useState<string | null>(null)
+  const [pendingPlaylistId, setPendingPlaylistId] = useState<number | null>(null)
 
   const itemCountOf = (p: Playlist) => p.items?.length ?? 0
   const containsVideo = (p: Playlist) =>
     (p.items ?? []).some((it) => (typeof it === 'number' ? it : it.id) === videoId)
 
   const handleAdd = (playlist: Playlist) => {
+    // 補-8-1-3: 送信中の二重タップを防ぐ
+    if (addVideo.isPending) return
     if (containsVideo(playlist)) {
       setMessage('すでに追加されています')
       return
@@ -45,13 +49,19 @@ export const AddToPlaylistSheet = ({
       setMessage(`1つのプレイリストには最大${MAX_PLAYLIST_ITEMS}本までです`)
       return
     }
+    setPendingPlaylistId(playlist.id)
     addVideo.mutate(
       { playlist, videoId },
-      { onSuccess: () => setMessage(`「${playlist.name}」に追加しました`) },
+      {
+        onSuccess: () => setMessage(`「${playlist.name}」に追加しました`),
+        onError: (e) => setMessage(mutationErrorMessage(e)),
+        onSettled: () => setPendingPlaylistId(null),
+      },
     )
   }
 
   const handleCreate = () => {
+    if (createPlaylist.isPending) return
     const name = newName.trim()
     if (!name) return
     if (playlists.length >= MAX_PLAYLISTS_PER_OWNER) {
@@ -65,6 +75,7 @@ export const AddToPlaylistSheet = ({
           setNewName('')
           setMessage(`「${name}」を作成して追加しました`)
         },
+        onError: (e) => setMessage(mutationErrorMessage(e)),
       },
     )
   }
@@ -94,7 +105,11 @@ export const AddToPlaylistSheet = ({
             </Txt>
           }
           renderItem={({ item }) => (
-            <Pressable onPress={() => handleAdd(item)} style={styles.row}>
+            <Pressable
+              onPress={() => handleAdd(item)}
+              disabled={pendingPlaylistId === item.id}
+              style={[styles.row, pendingPlaylistId === item.id && { opacity: 0.5 }]}
+            >
               <Txt style={{ flex: 1 }}>{item.name}</Txt>
               <Txt size="xs" color={colors.textMuted}>
                 {itemCountOf(item)}/{MAX_PLAYLIST_ITEMS}

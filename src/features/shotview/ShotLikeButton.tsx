@@ -6,6 +6,7 @@ import React from 'react'
 import { Pressable, StyleSheet } from 'react-native'
 
 import { Txt } from '../../components/ui'
+import { alertMutationError } from '../../lib/mutationFeedback'
 import { useLikedShots, useToggleShotLike } from '../../queries/likes'
 import { colors, radius, space } from '../../theme'
 
@@ -20,7 +21,12 @@ export const ShotLikeButton = ({ shotId }: { shotId: number }) => {
       accessibilityLabel={liked ? 'ショットのお気に入りを解除' : 'ショットをお気に入りに追加'}
       accessibilityState={{ selected: liked }}
       disabled={toggle.isPending}
-      onPress={() => toggle.mutate({ shotId, likeId: likeIdByShotId.get(shotId) })}
+      onPress={() =>
+        toggle.mutate(
+          { shotId, likeId: likeIdByShotId.get(shotId) },
+          { onError: (e) => alertMutationError(e) },
+        )
+      }
       style={[styles.btn, liked && styles.btnActive]}
       hitSlop={8}
     >

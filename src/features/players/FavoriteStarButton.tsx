@@ -8,6 +8,7 @@ import React from 'react'
 import { Alert, Pressable, StyleSheet } from 'react-native'
 
 import { Txt } from '../../components/ui'
+import { alertMutationError } from '../../lib/mutationFeedback'
 import { MAX_FAVORITES, useFavoritePlayers, useToggleFavoritePlayer } from '../../queries/home'
 import { colors } from '../../theme'
 
@@ -31,7 +32,10 @@ export const FavoriteStarButton = ({
       )
       return
     }
-    toggle.mutate({ playerId, favoriteId, currentCount: playerIds.length, nextOrder: playerIds.length })
+    toggle.mutate(
+      { playerId, favoriteId, currentCount: playerIds.length, nextOrder: playerIds.length },
+      { onError: (e) => alertMutationError(e) },
+    )
   }
 
   const fontSize = size === 'sm' ? 'md' : size === 'lg' ? 'xxl' : 'lg'
