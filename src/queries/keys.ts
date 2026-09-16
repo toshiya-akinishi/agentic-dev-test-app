@@ -67,6 +67,11 @@ export const qk = {
   ad: (slot: string, ctx?: unknown) => ['ad', slot, ctx ?? {}] as const,
 
   me: () => ['me'] as const,
+
+  /** 観戦ガイド記事詳細（1-1 / slug 引き） */
+  guideArticle: (slug: string) => ['guide-article', slug] as const,
+  /** 用語詳細（1-2 / 関連用語つき・補-1-2-2） */
+  glossaryTerm: (id: string) => ['glossary-term', id] as const,
 } as const
 
 /**
@@ -86,7 +91,9 @@ export const PERSISTED_KEY_ROOTS = new Set<string>([
   'venue-facilities',
   'transport-infos',
   'glossary',
+  'glossary-term',
   'guide-articles',
+  'guide-article',
   'faqs',
   'tickets',
   'notifications',
