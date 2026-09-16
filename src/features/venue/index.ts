@@ -1,7 +1,9 @@
 /** 現地情報・会場マップ・コースの機能固有コンポーネント（EP-08 / 要求 1-14〜1-31） */
 export { AccessInfoSection } from './AccessInfoSection'
+export { CourseHoleListRow } from './CourseHoleListRow'
 export { GalleryBusSection } from './GalleryBusSection'
 export { GoogleMapQrCard } from './GoogleMapQrCard'
+export { HolePhotoToggle } from './HolePhotoToggle'
 export { ParkingSection } from './ParkingSection'
 export { StoreCarousel } from './StoreCarousel'
 export { WeatherStrip } from './WeatherStrip'
