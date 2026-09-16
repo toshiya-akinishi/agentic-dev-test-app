@@ -6,7 +6,7 @@
 import { Image } from 'expo-image'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
-import { FlatList, ScrollView, StyleSheet, View } from 'react-native'
+import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 
 import { Card, EmptyState, ErrorView, Loading, SkeletonList, Tabs, Txt } from '../../src/components/ui'
 import { mediaUrl } from '../../src/features/common'
@@ -118,6 +118,15 @@ export default function PlayerDetailScreen() {
           ) : null}
         </View>
         <FavoriteStarButton playerId={player.id} size="lg" />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="この選手の通知設定"
+          hitSlop={10}
+          onPress={() => router.push(`/mypage/notifications?playerId=${player.id}`)}
+          style={styles.notificationButton}
+        >
+          <Txt size="xl">🔔</Txt>
+        </Pressable>
       </View>
 
       <Tabs value={tab} onChange={setTab} options={TAB_OPTIONS} scrollable />
@@ -322,6 +331,7 @@ const styles = StyleSheet.create({
     padding: space.lg,
   },
   photo: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primaryLight },
+  notificationButton: { alignItems: 'center', justifyContent: 'center', padding: 4 },
   photoFallback: { alignItems: 'center', justifyContent: 'center' },
   tabContent: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
   summaryRow: { flexDirection: 'row' },

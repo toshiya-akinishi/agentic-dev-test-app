@@ -87,6 +87,11 @@ export default function MyPageScreen() {
         />
       </Section>
 
+      <Section title="通知">
+        <MenuRow label="通知センター" onPress={() => router.push('/notifications')} />
+        <MenuRow label="通知設定" onPress={() => router.push('/mypage/notifications')} last />
+      </Section>
+
       <Section title="ヘルプ・情報">
         <MenuRow label="使い方ガイド" onPress={() => router.push('/onboarding?replay=1')} />
         <MenuRow label="よくある質問（FAQ）" onPress={() => router.push('/mypage/faq')} />
