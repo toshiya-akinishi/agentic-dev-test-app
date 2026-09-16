@@ -42,12 +42,23 @@ export const qk = {
 
   videos: (params?: unknown) => ['videos', params ?? {}] as const,
   video: (id: string) => ['video', id] as const,
+  videoHole: (courseId: string, hole: string) => ['video-hole', courseId, hole] as const,
+  allTournamentsForFilter: () => ['tournaments', 'video-filter'] as const,
+  allPlayersForFilter: () => ['players', 'video-filter'] as const,
   liveStreams: (tournamentId?: string) => ['live-streams', tournamentId ?? 'all'] as const,
+  liveStream: (id: string) => ['live-stream', id] as const,
   highlightsHome: () => ['highlights', 'home'] as const,
   highlightsForMe: (owner: string) => ['highlights', 'for-me', owner] as const,
+  /** 2-13(a): 大会ハイライト（運営編成・tournament_daily） */
+  tournamentHighlightReel: (tournamentId: string) => ['highlights', 'tournament-daily', tournamentId] as const,
+  /** 2-13(b): お気に入り選手のプレー動画（ユーザー依存・動的生成） */
+  favoritePlayerReel: (owner: string) => ['highlights', 'favorite-players', owner] as const,
+  /** 2-12: 縦型ストーリーの素材プール（story_vertical / player_story） */
+  storyFeed: (playerId?: string) => ['story-feed', playerId ?? 'all'] as const,
   autoPlaylist: (roundId: string, playerId: string) =>
     ['playlists', 'auto', roundId, playerId] as const,
   playlists: (owner: string) => ['playlists', owner] as const,
+  playlist: (id: string) => ['playlist', id] as const,
 
   news: (params?: unknown) => ['news', params ?? {}] as const,
   newsItem: (id: string) => ['news-item', id] as const,
@@ -104,6 +115,7 @@ export const USER_SCOPED_KEY_ROOTS = new Set<string>([
   'notification-settings',
   'notifications',
   'playlists',
+  'playlist',
   'tickets',
 ])
 

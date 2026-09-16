@@ -14,11 +14,14 @@ import {
 import { useAtomValue } from 'jotai'
 
 import {
+  createDoc,
+  deleteDoc,
   getCustom,
   getDoc,
   getGlobal,
   listCollection,
   request,
+  updateDoc,
   type PaginatedResponse,
 } from '../api/client'
 import type { ListParams } from '../api/query'
@@ -132,5 +135,5 @@ export const useApiMutation = <TData, TVars>(
   options?: UseMutationOptions<TData, unknown, TVars>,
 ) => useMutation<TData, unknown, TVars>({ mutationFn: fn, ...options })
 
-export { request, getCustom, listCollection, getDoc, useQueryClient }
+export { request, getCustom, listCollection, getDoc, createDoc, updateDoc, deleteDoc, useQueryClient }
 export type { PaginatedResponse }

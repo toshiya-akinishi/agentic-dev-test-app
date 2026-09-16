@@ -124,6 +124,14 @@ export const getGlobal = <T>(slug: string, depth = 1) =>
 export const createDoc = <T>(collection: string, body: unknown) =>
   request<{ message?: string; doc: T }>(`/api/${collection}`, { method: 'POST', body })
 
+/** コレクションの更新（標準 REST）。例: いいねの追加解除に伴う `videos.likeCount` 更新は行わず、対象ドキュメント自体の更新に使う */
+export const updateDoc = <T>(collection: string, id: string | number, body: unknown) =>
+  request<{ message?: string; doc: T }>(`/api/${collection}/${id}`, { method: 'PATCH', body })
+
+/** コレクションのドキュメント削除（標準 REST）。例: いいね解除（`likes`）・プレイリスト削除 */
+export const deleteDoc = (collection: string, id: string | number) =>
+  request<{ message?: string }>(`/api/${collection}/${id}`, { method: 'DELETE' })
+
 /** カスタムエンドポイント（docs/03-api-spec.md 3章） */
 export const getCustom = <T>(path: string, search?: Record<string, string | number | undefined>) => {
   const qs = search
