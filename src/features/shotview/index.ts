@@ -1,0 +1,10 @@
+/** ショットビューの機能固有コンポーネント（EP-11 / 要求 1-37〜1-47） */
+export { HoleDiagram, type PlayerShots } from './HoleDiagram'
+export { HoleScoreChipStrip } from './HoleScoreChipStrip'
+export { PlayerPicker, PlayerLegend } from './PlayerPicker'
+export { ShotDetailSheet } from './ShotDetailSheet'
+export { TrackmanPanel, hasTrackmanData } from './TrackmanPanel'
+export { HoleAnalysisPanel } from './HoleAnalysisPanel'
+export { ZoneDetailCard } from './ZoneDetailCard'
+export { ShotLikeButton } from './ShotLikeButton'
+export { ZONE_LABELS, heatColor } from './zones'
